@@ -1,3 +1,3 @@
-# oxypki: a rust oxide tool to operate certificate
+# oxypki: a rust oxide tool for PKI
 
 many things to be down....

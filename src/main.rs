@@ -16,6 +16,7 @@ fn main() {
                                     .value_parser(value_parser!(PathBuf)),
                                 );
     let mut main_cmd = command!() 
+        .about("oxypki: a rust oxide tool for PKI")
         .arg(
             arg!(
                 -d --debug ... "Turn debugging information on"
