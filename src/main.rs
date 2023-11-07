@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use clap::{arg, command, value_parser, ArgAction, Command, ArgMatches};
+use clap::{arg, command, value_parser, Command};
+
+mod certificate;
 
 
 fn main() {
@@ -15,7 +17,7 @@ fn main() {
                                     .required(true)
                                     .value_parser(value_parser!(PathBuf)),
                                 );
-    let mut main_cmd = command!() 
+    let main_cmd = command!() 
         .about("oxypki: a rust oxide tool for PKI")
         .arg(
             arg!(
@@ -28,16 +30,12 @@ fn main() {
             subcmd_cert
         );
 
-    let long_help = main_cmd.render_help();
     let matches = main_cmd.get_matches();
-        
 
-    let match_subcmd_vec = match matches.subcommand() {
-        Some(x) => x,
-        None => {
-            println!("{long_help}");
-            unreachable!("subcommand is required");
-        }
-    };
+    if let Some(cert_matches) = matches.subcommand_matches("cert") {
+        let p = cert_matches.get_one::<PathBuf>("in").unwrap();
+        certificate::parser_cert(p);
+    }
+
 
 }
