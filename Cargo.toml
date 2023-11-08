@@ -6,5 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.4.7", features=["cargo", "unicode"] }
-x509-parser = { version = "0.15.1", features = [ "verify", "validate" ] }
+clap = { version = "4.4", features=["cargo", "unicode"] }
+x509-parser = { version = "0.15", features = [ "verify", "validate" ] }
+thiserror = "1.0"
+rustls-pemfile = "1.0"

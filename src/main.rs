@@ -3,39 +3,42 @@ use std::path::PathBuf;
 use clap::{arg, command, value_parser, Command};
 
 mod certificate;
-
+mod error;
+mod utils;
 
 fn main() {
+    let in_file_arg = arg!(
+        --in <INFILE> "Input file, default pem file format"
+    )
+    .required(true)
+    .value_parser(value_parser!(PathBuf));
+
+    let in_file_form = arg!(
+        --inform  "Specific the input file format, default to pem"
+    )
+    .value_parser(["pem", "der"])
+    .default_value("pem");
 
     let subcmd_cert_about = "For operating certificate";
     let subcmd_cert = Command::new("cert")
-                                .about(subcmd_cert_about)
-                                .arg(
-                                    arg!(
-                                        --in <INFILE> "input file"
-                                    )
-                                    .required(true)
-                                    .value_parser(value_parser!(PathBuf)),
-                                );
-    let main_cmd = command!() 
+        .about(subcmd_cert_about)
+        .arg(in_file_arg.clone())
+        .arg(in_file_form.clone());
+    let main_cmd = command!()
         .about("oxypki: a rust oxide tool for PKI")
         .arg(
             arg!(
                 -d --debug ... "Turn debugging information on"
             )
-            .action(clap::ArgAction::Count)
+            .action(clap::ArgAction::Count),
         )
         .subcommand_required(true)
-        .subcommand(
-            subcmd_cert
-        );
+        .subcommand(subcmd_cert);
 
     let matches = main_cmd.get_matches();
 
     if let Some(cert_matches) = matches.subcommand_matches("cert") {
-        let p = cert_matches.get_one::<PathBuf>("in").unwrap();
-        certificate::parser_cert(p);
+        let pb = cert_matches.get_one::<PathBuf>("in").unwrap();
+        certificate::parser_cert(pb);
     }
-
-
 }
