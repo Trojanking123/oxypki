@@ -1,7 +1,42 @@
+use std::fs::File;
+use std::io::{BufReader, Read};
 use std::path::Path;
 
-use crate::error::PkiResult;
+use rustls_pemfile::{read_one, Item};
 
-pub fn read_file_to_der<P: AsRef<Path>>(path: P) -> PkiResult<Vec<u8>> {
-    unimplemented!()
+use crate::error::{PkiError, PkiResult};
+
+use super::FileFormat;
+
+pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FileFormat) -> PkiResult<Vec<u8>> {
+    let path = path.as_ref();
+    match tp {
+        FileFormat::PEM => {
+            let fd = match File::open(path) {
+                Ok(fd) => fd,
+                _ => return Err(PkiError::FileNotExsit(path.to_owned())),
+            };
+            let mut reader = BufReader::new(fd);
+            let item = match read_one(&mut reader) {
+                Ok(it) => it,
+                _ => return  Err(PkiError::InvalidFormat)
+            };
+
+            let res = match item {
+                Some(Item::X509Certificate(cert)) => cert,
+                _ => return Err(PkiError::InvalidFormat),
+            };
+            Ok(res)
+        }
+        FileFormat::DER => {
+            let mut fd = match File::open(path) {
+                Ok(fd) => fd,
+                _ => return Err(PkiError::FileNotExsit(path.to_owned())),
+            };
+            let file_size = fd.metadata()?.len();
+            let mut res = vec![0; file_size as usize];
+            fd.read_to_end(&mut res)?;
+            Ok(res)
+        }
+    }
 }

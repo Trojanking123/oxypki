@@ -1,23 +1,22 @@
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::Path;
 
-use x509_parser::nom::AsBytes;
 use x509_parser::prelude::*;
 
-pub fn parser_cert<P: AsRef<Path>>(path: P) {
-    let mut fd = File::open(path).unwrap();
-    let mut buf = Vec::new();
-    let a = fd.read_to_end(&mut buf);
-    let der = buf.as_bytes();
+use crate::error::{PkiResult, PkiError};
+use crate::utils::fileio::read_file_to_der;
+use crate::utils::FileFormat;
 
-    let res = X509Certificate::from_der(der);
+pub fn parser_cert<P: AsRef<Path>>(path: P, tp: FileFormat) -> PkiResult<()> {
+    let der_buf = read_file_to_der(path, tp)?;
+
+    let res = X509Certificate::from_der(&der_buf);
     match res {
         Ok((rem, cert)) => {
             assert!(rem.is_empty());
             //
             assert_eq!(cert.version(), X509Version::V3);
+            Ok(())
         }
-        _ => panic!("x509 parsing failed: {:?}", res),
+        _ => Err( PkiError::InvalidFormat )
     }
 }
