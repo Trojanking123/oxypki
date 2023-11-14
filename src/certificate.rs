@@ -2,7 +2,7 @@ use std::path::Path;
 
 use x509_parser::prelude::*;
 
-use crate::error::{PkiResult, PkiError};
+use crate::error::{PkiError, PkiResult};
 use crate::utils::fileio::read_file_to_der;
 use crate::utils::FileFormat;
 
@@ -16,7 +16,7 @@ pub fn parser_cert<P: AsRef<Path>>(path: P, tp: FileFormat) -> PkiResult<()> {
             //
             assert_eq!(cert.version(), X509Version::V3);
             Ok(())
-        }
-        _ => Err( PkiError::InvalidFormat )
+        },
+        _ => Err(PkiError::InvalidFormat),
     }
 }

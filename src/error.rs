@@ -17,5 +17,3 @@ pub enum PkiError {
 }
 
 pub type PkiResult<T> = Result<T, PkiError>;
-
-

@@ -1,14 +1,15 @@
 use std::path::PathBuf;
 
-use clap::{arg, command, value_parser, Command, ArgAction};
-use error::{PkiError, PkiResult};
+use clap::{arg, command, value_parser, ArgAction, Command};
+
+use error::PkiResult;
 use utils::FileFormat;
 
 mod certificate;
 mod error;
 mod utils;
 
-fn main() {
+fn main() -> PkiResult<()> {
     let in_file_arg = arg!(
         --in <INFILE> "Input file, default pem file format"
     )
@@ -21,7 +22,6 @@ fn main() {
     .value_parser(["pem", "der"])
     .default_value("pem")
     .action(ArgAction::Set);
-
 
     let subcmd_cert_about = "For operating certificate";
     let subcmd_cert = Command::new("cert")
@@ -45,6 +45,7 @@ fn main() {
         let pb = cert_matches.get_one::<PathBuf>("in").unwrap();
         let tp = cert_matches.get_one::<String>("inform").unwrap();
         let tp: FileFormat = (&tp).parse().unwrap();
-        certificate::parser_cert(pb, tp).unwrap();
+        certificate::parser_cert(pb, tp)?;
     }
+    Ok(())
 }
