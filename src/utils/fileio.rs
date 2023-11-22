@@ -6,12 +6,12 @@ use rustls_pemfile::{read_one, Item};
 
 use crate::error::{PkiError, PkiResult};
 
-use super::FileFormat;
+use super::FormatType;
 
-pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FileFormat) -> PkiResult<Vec<u8>> {
+pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FormatType) -> PkiResult<Vec<u8>> {
     let path = path.as_ref();
     match tp {
-        FileFormat::PEM => {
+        FormatType::PEM => {
             let fd = match File::open(path) {
                 Ok(fd) => fd,
                 _ => return Err(PkiError::FileNotExsit(path.to_owned())),
@@ -28,7 +28,7 @@ pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FileFormat) -> PkiResult<Ve
             };
             Ok(res)
         },
-        FileFormat::DER => {
+        FormatType::DER => {
             let mut fd = match File::open(path) {
                 Ok(fd) => fd,
                 _ => return Err(PkiError::FileNotExsit(path.to_owned())),
@@ -38,5 +38,7 @@ pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FileFormat) -> PkiResult<Ve
             fd.read_to_end(&mut res)?;
             Ok(res)
         },
+
+        _ => Err(PkiError::InvalidFormat),
     }
 }
