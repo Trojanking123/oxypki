@@ -11,7 +11,7 @@ use super::FormatType;
 pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FormatType) -> PkiResult<Vec<u8>> {
     let path = path.as_ref();
     match tp {
-        FormatType::PEM => {
+        FormatType::Pem => {
             let fd = match File::open(path) {
                 Ok(fd) => fd,
                 _ => return Err(PkiError::FileNotExsit(path.to_owned())),
@@ -28,7 +28,7 @@ pub fn read_file_to_der<P: AsRef<Path>>(path: P, tp: FormatType) -> PkiResult<Ve
             };
             Ok(res)
         },
-        FormatType::DER => {
+        FormatType::Der => {
             let mut fd = match File::open(path) {
                 Ok(fd) => fd,
                 _ => return Err(PkiError::FileNotExsit(path.to_owned())),

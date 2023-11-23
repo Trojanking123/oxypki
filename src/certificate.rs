@@ -13,7 +13,7 @@ impl<'a> Formatter for X509Certificate<'a> {
     fn format(&self, tp: FormatType) -> PkiResult<BytesMut> {
         let mut buf = BytesMut::with_capacity(1024);
         match tp {
-            FormatType::TEXT => {
+            FormatType::Text => {
                 buf.put_str("Certificate:");
                 buf.put_tab(1);
                 buf.put_str("Data:\n");
@@ -22,7 +22,7 @@ impl<'a> Formatter for X509Certificate<'a> {
                 buf.put_str( self.version().to_string().as_str() );
                 Ok(buf)
             },
-            FormatType::JSON => {
+            FormatType::Json => {
                 unimplemented!()
             },
             _ => Err(PkiError::InvalidFormat),
@@ -38,7 +38,7 @@ pub fn parser_cert<P: AsRef<Path>>(path: P, tp: FormatType) -> PkiResult<()> {
         Ok((rem, cert)) => {
             assert!(rem.is_empty());
 
-            let buf = cert.format(FormatType::TEXT)?;
+            let buf = cert.format(FormatType::Text)?;
             let buf = buf.as_bytes();
             Ok(())
         },

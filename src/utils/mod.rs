@@ -5,10 +5,10 @@ pub mod format;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum FormatType {
-    PEM,
-    DER,
-    JSON,
-    TEXT,
+    Pem,
+    Der,
+    Json,
+    Text,
 }
 
 impl FromStr for FormatType {
@@ -16,10 +16,10 @@ impl FromStr for FormatType {
 
     fn from_str(input: &str) -> Result<FormatType, Self::Err> {
         match input {
-            "pem" => Ok(FormatType::PEM),
-            "der" => Ok(FormatType::DER),
-            "json" => Ok(FormatType::DER),
-            "text" => Ok(FormatType::DER),
+            "pem" => Ok(FormatType::Pem),
+            "der" => Ok(FormatType::Der),
+            "json" => Ok(FormatType::Json),
+            "text" => Ok(FormatType::Text),
             _ => Err(()),
         }
     }
@@ -28,10 +28,10 @@ impl FromStr for FormatType {
 impl fmt::Display for FormatType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self {
-            FormatType::PEM => write!(f, "pem"),
-            FormatType::DER => write!(f, "der"),
-            FormatType::JSON => write!(f, "json"),
-            FormatType::TEXT => write!(f, "text"),
+            FormatType::Pem => write!(f, "pem"),
+            FormatType::Der => write!(f, "der"),
+            FormatType::Json => write!(f, "json"),
+            FormatType::Text => write!(f, "text"),
         }
     }
 }
