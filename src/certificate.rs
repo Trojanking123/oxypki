@@ -1,7 +1,5 @@
 use std::path::Path;
 
-use bytes::BytesMut;
-use x509_parser::nom::AsBytes;
 use x509_parser::prelude::*;
 
 use crate::error::{PkiError, PkiResult};
@@ -10,17 +8,18 @@ use crate::utils::format::{Formatter, PutChar};
 use crate::utils::FormatType;
 
 impl<'a> Formatter for X509Certificate<'a> {
-    fn format(&self, tp: FormatType) -> PkiResult<BytesMut> {
-        let mut buf = BytesMut::with_capacity(1024);
+    type Target = Vec<u8>;
+    fn format(&self, tp: FormatType) -> PkiResult<Self::Target> {
         match tp {
             FormatType::Text => {
-                buf.put_str("Certificate:");
+                let mut buf = String::new();
+                buf.put_str("Certificate:\n");
                 buf.put_tab(1);
                 buf.put_str("Data:\n");
                 buf.put_tab(2);
-                buf.put_str("Version:");
-                buf.put_str( self.version().to_string().as_str() );
-                Ok(buf)
+                let ver = format!("Version: {}\n", self.version());
+                buf.put_str(ver.as_str());
+                Ok(buf.into_bytes())
             },
             FormatType::Json => {
                 unimplemented!()
@@ -39,7 +38,8 @@ pub fn parser_cert<P: AsRef<Path>>(path: P, tp: FormatType) -> PkiResult<()> {
             assert!(rem.is_empty());
 
             let buf = cert.format(FormatType::Text)?;
-            let buf = buf.as_bytes();
+            let s = String::from_utf8(buf).unwrap();
+            println!("{s}");
             Ok(())
         },
         _ => Err(PkiError::InvalidFormat),

@@ -44,7 +44,7 @@ fn main() -> PkiResult<()> {
     if let Some(cert_matches) = matches.subcommand_matches("cert") {
         let pb = cert_matches.get_one::<PathBuf>("in").unwrap();
         let tp = cert_matches.get_one::<String>("inform").unwrap();
-        let tp: FormatType = (&tp).parse().unwrap();
+        let tp: FormatType = tp.parse().unwrap();
         certificate::parser_cert(pb, tp)?;
     }
     Ok(())
