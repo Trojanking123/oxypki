@@ -50,7 +50,7 @@ impl PutChar for String {
 
 impl PutChar for Vec<u8> {
     fn put_tab(&mut self, n: usize) {
-        self.put_bytes( b' ', n * 4)
+        self.put_bytes(b' ', n * 4)
     }
     fn put_newline(&mut self, n: usize) {
         self.put_bytes(b'\n', n);

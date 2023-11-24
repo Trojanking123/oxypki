@@ -309,6 +309,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "clap",
+ "oid-registry",
  "rustls-pemfile",
  "thiserror",
  "x509-parser",
