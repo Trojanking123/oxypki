@@ -1,6 +1,8 @@
 use std::path::Path;
+use std::sync::OnceLock;
 
-use oid_registry::OidRegistry;
+use oid_registry::{OidRegistry, OidEntry};
+use x509_parser::public_key::PublicKey;
 
 use crate::error::{PkiError, PkiResult};
 use crate::utils::fileio::read_file_to_der;
@@ -16,9 +18,26 @@ fn add_line<T: AsRef<str>>(s: &mut String, n_tab: usize, content: T, n_line: usi
     s.put_newline(n_line)
 }
 
+fn add_bits(s: &mut String, n_tab: usize, content: &[u8], n_line: usize) {
+    let every_line_bit_num = 16;
+    let line_num = content.len() / every_line_bit_num;
+    for i in 0..line_num {
+        let tmp = &content[i * every_line_bit_num..((i + 1) * every_line_bit_num)];
+        let formatted_string = tmp
+            .iter()
+            .map(|byte| format!("{:02x}:", byte))
+            .collect::<Vec<String>>()
+            .join("");
+        add_line(s, n_tab, formatted_string, n_line)
+    }
+}
+
 fn get_oid_sn(oid: &Oid) -> String {
-    let reg = OidRegistry::default().with_all_crypto();
-    let e = reg.get(oid).unwrap();
+    println!("{}", oid);
+    static REG: OnceLock<OidRegistry> = OnceLock::new();
+    REG.get_or_init(|| OidRegistry::default().with_all_crypto());
+    let b = OidEntry::new(oid.to_string(), "");
+    let e = REG.get().unwrap().get(oid).unwrap_or(&b);
     e.sn().to_owned()
 }
 
@@ -42,12 +61,58 @@ impl<'a> Formatter for X509Certificate<'a> {
                 add_line(&mut buf, 2, format!("Signature Algorithm: {}", sn), 1);
                 add_line(&mut buf, 2, format!("Issuer: {}", self.issuer()), 1);
                 add_line(&mut buf, 2, "Validity: ", 1);
-                add_line(&mut buf, 3, format!("Not Before: {}", self.validity().not_before), 1);
-                add_line(&mut buf, 3, format!("Not Before: {}", self.validity().not_after), 1);
+                add_line(
+                    &mut buf,
+                    3,
+                    format!("Not Before: {}", self.validity().not_before),
+                    1,
+                );
+                add_line(
+                    &mut buf,
+                    3,
+                    format!("Not Before: {}", self.validity().not_after),
+                    1,
+                );
                 add_line(&mut buf, 2, format!("Subject: {}", self.subject()), 1);
                 add_line(&mut buf, 2, "Subject Public Key Info: ", 1);
-                let a = self.public_key();
+                let pk_ref = self.public_key();
+                add_line(
+                    &mut buf,
+                    3,
+                    format!(
+                        "Public Key Algorithm: {}",
+                        get_oid_sn(&pk_ref.algorithm.algorithm)
+                    ),
+                    1,
+                );
+                let pk = pk_ref.parsed().unwrap();
+                add_line(
+                    &mut buf,
+                    4,
+                    format!("Public-Key: ({} bit)", pk.key_size()),
+                    1,
+                );
+                match pk {
+                    PublicKey::RSA(rsa_pk) => {
+                        add_line(&mut buf, 4, "Modulus: ", 1);
 
+                        let module = if rsa_pk.modulus[0] & 0x80 == 0 {
+                            &rsa_pk.modulus[1..]
+                        } else {
+                            rsa_pk.modulus
+                        };
+                        add_bits(&mut buf, 5, module, 1);
+                        let exponent = rsa_pk.try_exponent().unwrap();
+                        add_line(
+                            &mut buf,
+                            4,
+                            format!("Exponent: {} (0x{:x})", exponent, exponent),
+                            1,
+                        );
+                    },
+                    PublicKey::EC(_ecp) => {},
+                    _ => {},
+                }
 
                 Ok(buf.into_bytes())
             },
